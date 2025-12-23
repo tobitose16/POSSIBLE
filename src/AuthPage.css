@@ -1,0 +1,124 @@
+/* Main container with light blue background */
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f7ff;
+    font-family: sans-serif;
+}
+
+/* White card for the form */
+.auth-box {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 380px;
+}
+
+header h1 {
+    color: #1e3a8a;
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+    text-align: center;
+}
+
+header p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Input fields */
+.field {
+    margin-bottom: 1.25rem;
+}
+
+.field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.4rem;
+}
+
+.field input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Main action button */
+.auth-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1d4ed8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.auth-btn:hover {
+    background-color: #1e40af;
+}
+
+.auth-btn:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+}
+
+/* Status messages */
+.status-msg {
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.status-msg.error {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.status-msg.success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+/* Footer links */
+footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.switch-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: 700;
+    cursor: pointer;
+    padding-left: 0.5rem;
+}
+
+.switch-btn:hover {
+    text-decoration: underline;
+}
