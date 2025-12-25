@@ -7,22 +7,18 @@ import {
 import { doc, setDoc } from 'firebase/firestore';
 import './AuthPage.css';
 
-/**
- * A simplified Authentication Page component.
- * Handles both Login and Sign Up using Firebase.
- */
+
 const AuthPage = () => {
-    // --- UI State ---
+
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    // --- Form State ---
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [company, setCompany] = useState('');
 
-    // --- Logic ---
+   
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -31,15 +27,15 @@ const AuthPage = () => {
 
         try {
             if (isLogin) {
-                // Sign In logic
+              
                 await signInWithEmailAndPassword(auth, email, password);
                 setMessage({ type: 'success', text: 'Welcome back! Login successful.' });
             } else {
-                // Sign Up logic
+                
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Save company name to Firestore
+                
                 await setDoc(doc(db, "users", user.uid), {
                     company: company,
                     email: email,
@@ -47,7 +43,7 @@ const AuthPage = () => {
                 });
 
                 setMessage({ type: 'success', text: 'Account created! You can now login.' });
-                setIsLogin(true); // Switch to login after signup
+                setIsLogin(true); 
             }
         } catch (error) {
             setMessage({ type: 'error', text: error.message.split('Auth: ')[1] || error.message });
