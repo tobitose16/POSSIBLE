@@ -25,7 +25,7 @@ const CampaignManager = ({ user }) => {
         setLoading(true);
         try {
             const [campaignsData, leadsData] = await Promise.all([
-                getCampaigns(),
+                getCampaigns(user.uid), // Pass userId to get user-specific campaigns
                 getLeads(user.uid) // Pass userId to get user-specific leads
             ]);
             setCampaigns(campaignsData);
@@ -76,7 +76,7 @@ const CampaignManager = ({ user }) => {
                 createdDate: new Date().toISOString()
             };
 
-            const result = await addCampaign(campaignData);
+            const result = await addCampaign(campaignData, user.uid); // Pass userId
 
             if (result.success) {
                 setMessage({ type: 'success', text: 'Campaign created successfully!' });

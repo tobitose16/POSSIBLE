@@ -66,10 +66,11 @@ export const deleteLead = async (leadId) => {
 };
 
 // Campaign Management
-export const addCampaign = async (campaignData) => {
+export const addCampaign = async (campaignData, userId) => {
     try {
         const docRef = await addDoc(collection(db, CAMPAIGNS_COLLECTION), {
             ...campaignData,
+            userId: userId, // Associate campaign with user
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp()
         });
@@ -80,13 +81,17 @@ export const addCampaign = async (campaignData) => {
     }
 };
 
-export const getCampaigns = async () => {
+export const getCampaigns = async (userId) => {
     try {
         const q = query(collection(db, CAMPAIGNS_COLLECTION), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         const campaigns = [];
         querySnapshot.forEach((doc) => {
-            campaigns.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            // Only include campaigns for this user
+            if (data.userId === userId) {
+                campaigns.push({ id: doc.id, ...data });
+            }
         });
         return campaigns;
     } catch (error) {
@@ -140,7 +145,7 @@ export const getAnalytics = async (userId) => {
         const [leads, users, campaigns] = await Promise.all([
             getLeads(userId),
             getUsers(),
-            getCampaigns()
+            getCampaigns(userId) // Pass userId to get user-specific campaigns
         ]);
 
         return {
