@@ -6,7 +6,8 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import './AuthPage.css';
-
+//login page -by tobi tose 
+//signup -shahin p
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
