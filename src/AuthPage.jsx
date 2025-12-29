@@ -1,55 +1,27 @@
 import React, { useState } from 'react';
-import { auth, db } from './firebase';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { auth } from './firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import './AuthPage.css';
-//login page -by tobi tose 
-//signup -shahin p
+
+// Login page only
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [company, setCompany] = useState('');
 
-  const handleAuth = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-        setMessage({
-          type: 'success',
-          text: 'Welcome back! Login successful.',
-        });
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
-        const user = userCredential.user;
-
-        await setDoc(doc(db, 'users', user.uid), {
-          company: company,
-          email: email,
-          joinedAt: new Date().toISOString(),
-        });
-
-        setMessage({
-          type: 'success',
-          text: 'Account created! You can now login.',
-        });
-        setIsLogin(true);
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      setMessage({
+        type: 'success',
+        text: 'Welcome back! Login successful.',
+      });
     } catch (error) {
       setMessage({
         type: 'error',
@@ -64,8 +36,8 @@ const AuthPage = () => {
     <div className="auth-wrapper">
       <div className="auth-box">
         <header>
-          <h1>{isLogin ? 'Welcome Back' : 'Get Started'}</h1>
-          <p>{isLogin ? 'Login to your account' : 'Create a new account'}</p>
+          <h1>Welcome Back</h1>
+          <p>Login to your account</p>
         </header>
 
         {message.text && (
@@ -74,23 +46,7 @@ const AuthPage = () => {
           </div>
         )}
 
-        <form
-          onSubmit={handleAuth}
-          className={`auth-form ${isLogin ? 'login' : 'signup'}`}
-        >
-          {!isLogin && (
-            <div className="field">
-              <label>Company Name</label>
-              <input
-                type="text"
-                placeholder="Your Company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                required
-              />
-            </div>
-          )}
-
+        <form onSubmit={handleLogin} className="auth-form login">
           <div className="field">
             <label>Email</label>
             <input
@@ -114,22 +70,9 @@ const AuthPage = () => {
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+            {loading ? 'Processing...' : 'Login'}
           </button>
         </form>
-
-        <footer>
-          <p>
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
-            <button
-              type="button"
-              className="switch-btn"
-              onClick={() => setIsLogin(!isLogin)}
-            >
-              {isLogin ? 'Sign Up' : 'Login'}
-            </button>
-          </p>
-        </footer>
       </div>
     </div>
   );
