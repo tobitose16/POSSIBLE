@@ -39,22 +39,24 @@
         radial-gradient(circle at 80% 80%, #172554, transparent 50%),
         radial-gradient(circle at 50% 50%, #000000, #1e3a8a, #3b82f6);
     background-size: 200% 200%;
-    animation: nebulaMove 20s ease infinite;
+    /* Add subtle mouse-driven shift to background for "watery" feel */
+    background-position: calc(50% + var(--x) * 0.01) calc(50% + var(--y) * 0.01);
     font-family: 'Inter', sans-serif;
     color: #fff;
     perspective: 1200px;
     position: relative;
     overflow: hidden;
+    transition: background-position 0.1s ease-out;
 }
 
-/* Pseudo-element for "Snow/Star Dust" */
+/* Pseudo-element for "Snow/Star Dust" - Parallax Layer */
 .auth-wrapper::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: -50px;
+    left: -50px;
+    width: calc(100% + 100px);
+    height: calc(100% + 100px);
     background-image:
         radial-gradient(white 1px, transparent 1px),
         radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px);
@@ -63,7 +65,9 @@
     opacity: 0.15;
     z-index: 0;
     pointer-events: none;
-    animation: starFloat 10s ease-in-out infinite alternate;
+    /* Move opposite to mouse for depth */
+    transform: translate(calc(var(--x) * -0.02), calc(var(--y) * -0.02));
+    transition: transform 0.1s ease-out;
 }
 
 /* 3D Entry Animation */
