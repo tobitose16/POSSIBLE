@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import NetworkBackground from './components/NetworkBackground';
 import './AuthPage.css';
 //login page -by tobi tose 
 //signup -shahin p
@@ -51,9 +52,29 @@ const AuthPage = () => {
         setIsLogin(true);
       }
     } catch (error) {
+      let errorMessage = 'An error occurred. Please try again.';
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'This email is already registered. Please log in instead.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password is too weak. Please use at least 6 characters.';
+          break;
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':
+          errorMessage = 'Invalid email or password. Please try again.';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+
       setMessage({
         type: 'error',
-        text: error.message,
+        text: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -69,14 +90,23 @@ const AuthPage = () => {
 
   return (
     <div className="auth-wrapper" onMouseMove={handleMouseMove}>
+      <NetworkBackground />
+      <div className="spotlight-beam"></div>
+      <div className="scanlines"></div>
+      <div className="geo-shape shape-1"></div>
+      <div className="geo-shape shape-2"></div>
       <div className="auth-box">
-        <header>
-          <h1>{isLogin ? 'Welcome Back' : 'Get Started'}</h1>
-          <p>{isLogin ? 'Login to your account' : 'Create a new account'}</p>
+        <header className="cyber-reveal delay-1">
+          <h1 className="stylish-font text-gradient">
+            {isLogin ? 'Welcome Back' : 'Get Started'}
+          </h1>
+          <p className="cyber-reveal delay-2">
+            {isLogin ? 'Login to your account' : 'Create a new account'}
+          </p>
         </header>
 
         {message.text && (
-          <div className={`status-msg ${message.type}`}>
+          <div className={`status-msg ${message.type} cyber-reveal`}>
             {message.text}
           </div>
         )}
@@ -86,7 +116,7 @@ const AuthPage = () => {
           className={`auth-form ${isLogin ? 'login' : 'signup'}`}
         >
           {!isLogin && (
-            <div className="field">
+            <div className="field cyber-reveal delay-3">
               <label>Company Name</label>
               <input
                 type="text"
@@ -98,7 +128,7 @@ const AuthPage = () => {
             </div>
           )}
 
-          <div className="field">
+          <div className="field cyber-reveal delay-3">
             <label>Email</label>
             <input
               type="email"
@@ -109,7 +139,7 @@ const AuthPage = () => {
             />
           </div>
 
-          <div className="field">
+          <div className="field cyber-reveal delay-4">
             <label>Password</label>
             <input
               type="password"
@@ -120,12 +150,16 @@ const AuthPage = () => {
             />
           </div>
 
-          <button type="submit" className="auth-btn" disabled={loading}>
+          <button
+            type="submit"
+            className="auth-btn cyber-reveal delay-4"
+            disabled={loading}
+          >
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
           </button>
         </form>
 
-        <footer>
+        <footer className="cyber-reveal delay-4">
           <p>
             {isLogin ? "Don't have an account?" : 'Already have an account?'}
             <button

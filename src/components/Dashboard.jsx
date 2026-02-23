@@ -38,9 +38,9 @@ const Dashboard = ({ user }) => {
     };
 
     const StatCard = ({ icon: Icon, title, value, color }) => (
-        <div className="stat-card" style={{ borderLeftColor: color }}>
-            <div className="stat-icon" style={{ backgroundColor: `${color}15` }}>
-                <Icon size={24} style={{ color }} />
+        <div className="stat-card" style={{ color: color }}>
+            <div className="stat-icon" style={{ background: `linear-gradient(135deg, ${color}22, ${color}11)` }}>
+                <Icon size={28} style={{ color }} />
             </div>
             <div className="stat-content">
                 <h3>{title}</h3>
@@ -53,7 +53,10 @@ const Dashboard = ({ user }) => {
         <div className="dashboard">
             <div className="dashboard-header">
                 <h1>Dashboard Overview</h1>
-                <p className="dashboard-subtitle">Welcome back! Here's what's happening today.</p>
+                <p className="dashboard-subtitle">
+                    <span className="stylish-font text-gradient" style={{ fontSize: '1.25rem', marginRight: '8px' }}>Welcome back!</span>
+                    Here's what's happening today.
+                </p>
             </div>
 
             {/* Stats Grid */}

@@ -25,19 +25,19 @@ function App() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: '#f8fafc'
+        background: 'var(--bg-main)'
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             width: '50px',
             height: '50px',
-            border: '4px solid #e2e8f0',
-            borderTop: '4px solid #2563eb',
+            border: '4px solid var(--border)',
+            borderTop: '4px solid var(--primary)',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 1rem'
           }}></div>
-          <p style={{ color: '#64748b' }}>Loading...</p>
+          <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
         </div>
       </div>
     )
