@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, Save, RefreshCw, Trash2, Download } from 'lucide-react';
-import { addLead, getLeads, deleteLead } from '../services/firebaseService';
-import { writeToGoogleSheetsViaWebApp } from '../services/googleSheets';
+import { Users, CheckCircle, ClipboardList, BrainCircuit, Search, Moon, Bell, Plus, Download, ChevronDown, Phone, Mail, MessageSquare, AlertCircle } from 'lucide-react';
+import { getLeads } from '../services/firebaseService';
 import '../styles/LeadGeneration.css';
 
 const LeadGeneration = ({ user }) => {
-    const [formData, setFormData] = useState({
-        name: '',
-        number: '',
-        remarks: ''
-    });
     const [leads, setLeads] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
         if (user?.uid) {
@@ -22,314 +13,161 @@ const LeadGeneration = ({ user }) => {
     }, [user]);
 
     const loadLeads = async () => {
-        setLoading(true);
         try {
             const leadsData = await getLeads(user.uid);
             setLeads(leadsData);
         } catch (error) {
             console.error('Error loading leads:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const topStats = [
+        { label: "TOTAL LEADS", value: "2,543", icon: Users, color: "blue" },
+        { label: "CONVERTED", value: "342", icon: CheckCircle, color: "green" },
+        { label: "PENDING ACTION", value: "128", icon: ClipboardList, color: "orange" },
+        { label: "HIGH SENTIMENT", value: "85%", icon: BrainCircuit, color: "purple" }
+    ];
 
-    const validateForm = () => {
-        if (!formData.name.trim()) {
-            setMessage({ type: 'error', text: 'Name is required' });
-            return false;
-        }
-        if (!formData.number.trim()) {
-            setMessage({ type: 'error', text: 'Number is required' });
-            return false;
-        }
-        if (!/^\d{10}$/.test(formData.number.replace(/\s/g, ''))) {
-            setMessage({ type: 'error', text: 'Please enter a valid 10-digit number' });
-            return false;
-        }
-        return true;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!validateForm()) return;
-
-        setSubmitting(true);
-        setMessage({ type: '', text: '' });
-
-        try {
-            const leadData = {
-                ...formData,
-                timestamp: new Date().toISOString()
-            };
-
-            console.log('Attempting to save lead:', leadData);
-            console.log('User ID:', user?.uid);
-
-            // Save to Firebase with userId
-            const firebaseResult = await addLead(leadData, user.uid);
-
-            console.log('Firebase result:', firebaseResult);
-
-            // Save to Google Sheets (placeholder - requires setup)
-            const sheetsResult = await writeToGoogleSheetsViaWebApp(leadData);
-
-            if (firebaseResult.success) {
-                setMessage({
-                    type: 'success',
-                    text: 'Lead saved successfully to Firebase! (Google Sheets requires API setup)'
-                });
-
-                // Reset form
-                setFormData({ name: '', number: '', remarks: '' });
-
-                // Reload leads
-                loadLeads();
-            } else {
-                console.error('Firebase save failed:', firebaseResult.error);
-                setMessage({
-                    type: 'error',
-                    text: `Failed to save lead: ${firebaseResult.error || 'Unknown error'}`
-                });
-            }
-        } catch (error) {
-            console.error('Error submitting lead:', error);
-            setMessage({
-                type: 'error',
-                text: `An error occurred: ${error.message || 'Please try again.'}`
-            });
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleDelete = async (leadId, leadName) => {
-        if (!window.confirm(`Are you sure you want to delete lead "${leadName}"?`)) {
-            return;
-        }
-
-        try {
-            const result = await deleteLead(leadId);
-
-            if (result.success) {
-                setMessage({
-                    type: 'success',
-                    text: 'Lead deleted successfully!'
-                });
-                loadLeads();
-            } else {
-                setMessage({
-                    type: 'error',
-                    text: `Failed to delete lead: ${result.error}`
-                });
-            }
-        } catch (error) {
-            console.error('Error deleting lead:', error);
-            setMessage({
-                type: 'error',
-                text: 'An error occurred while deleting the lead.'
-            });
-        }
-    };
-
-    const downloadCSV = () => {
-        if (leads.length === 0) {
-            setMessage({
-                type: 'error',
-                text: 'No leads to download'
-            });
-            return;
-        }
-
-        // Create CSV header
-        const headers = ['Name', 'Phone Number', 'Remarks', 'Date Created'];
-
-        // Create CSV rows
-        const rows = leads.map(lead => {
-            const date = lead.createdAt
-                ? new Date(lead.createdAt.seconds * 1000).toLocaleDateString()
-                : 'N/A';
-
-            // Escape commas and quotes in data
-            const escapeCsvValue = (value) => {
-                if (!value) return '';
-                const stringValue = String(value);
-                if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-                    return `"${stringValue.replace(/"/g, '""')}"`;
-                }
-                return stringValue;
-            };
-
-            return [
-                escapeCsvValue(lead.name),
-                escapeCsvValue(lead.number),
-                escapeCsvValue(lead.remarks),
-                escapeCsvValue(date)
-            ].join(',');
-        });
-
-        // Combine header and rows
-        const csvContent = [headers.join(','), ...rows].join('\n');
-
-        // Create blob and download
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', `leads_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        setMessage({
-            type: 'success',
-            text: `Downloaded ${leads.length} leads as CSV`
-        });
-    };
+    const mockLeads = [
+        { id: 1, name: "Sarah Miller", email: "sarah.m@techcorp.com", company: "TechCorp Inc.", status: "Interested", sentiment: "Positive", match: 88, interaction: "Voice Call", time: "2 hours ago", interactionType: "phone", initial: "SM", avatarBg: "bg-blue" },
+        { id: 2, name: "John Doe", email: "j.doe@logistics.io", company: "Logistics IO", status: "New Lead", sentiment: "Neutral", match: 50, interaction: "Email Form", time: "1 day ago", interactionType: "mail", initial: "JD", avatarBg: "bg-purple" },
+        { id: 3, name: "Michael Chen", email: "mchen@innovate.net", company: "Innovate Networks", status: "Follow Up", sentiment: "Mixed", match: 42, interaction: "Missed Call", time: "Yesterday", interactionType: "alert", initial: "MC", avatarBg: "bg-orange" },
+        { id: 4, name: "Unknown User", email: "temp.contact@gmail.com", company: "--", status: "Unqualified", sentiment: "Negative", match: 12, interaction: "SMS", time: "3 days ago", interactionType: "msg", initial: "?", avatarBg: "bg-gray" }
+    ];
 
     return (
-        <div className="lead-generation">
-            <div className="section-header">
-                <div>
-                    <h1>Lead Generation</h1>
-                    <p className="section-subtitle">Capture and manage your leads efficiently</p>
+        <div className="lead-intel-center">
+            {/* Header */}
+            <div className="lic-header">
+                <div className="lic-title">
+                    <h1>Futuristic Lead Intelligence Center</h1>
+                    <div className="lic-subtitle">
+                        SYSTEM STATUS: <span>OPTIMAL</span>
+                    </div>
                 </div>
-                <div className="header-actions">
-                    <button className="download-btn" onClick={downloadCSV} disabled={loading || leads.length === 0}>
-                        <Download size={18} />
-                        Download CSV
-                    </button>
-                    <button className="refresh-btn" onClick={loadLeads} disabled={loading}>
-                        <RefreshCw size={18} className={loading ? 'spinning' : ''} />
-                        Refresh
+                <div className="lic-actions">
+                    <div className="lic-search">
+                        <Search size={16} />
+                        <input type="text" placeholder="Search database..." />
+                    </div>
+                    <button className="icon-btn-round"><Moon size={18} /></button>
+                    <button className="icon-btn-round with-dot"><Bell size={18} /><div className="red-dot"></div></button>
+                    <button className="btn-primary-pill">
+                        <Plus size={16} /> NEW LEAD
                     </button>
                 </div>
             </div>
 
-            <div className="lead-content">
-                {/* Lead Form */}
-                <div className="lead-form-card">
-                    <div className="card-header">
-                        <UserPlus size={24} />
-                        <h2>Add New Lead</h2>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="lead-form">
-                        <div className="form-group">
-                            <label htmlFor="name">Name *</label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="Enter lead name"
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="number">Phone Number *</label>
-                            <input
-                                type="tel"
-                                id="number"
-                                name="number"
-                                value={formData.number}
-                                onChange={handleChange}
-                                placeholder="Enter 10-digit number"
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="remarks">Remarks</label>
-                            <textarea
-                                id="remarks"
-                                name="remarks"
-                                value={formData.remarks}
-                                onChange={handleChange}
-                                placeholder="Add any additional notes or remarks"
-                                rows="4"
-                            />
-                        </div>
-
-                        {message.text && (
-                            <div className={`message ${message.type}`}>
-                                {message.text}
+            {/* Stats */}
+            <div className="lic-stats-row">
+                {topStats.map((stat, i) => {
+                    const Icon = stat.icon;
+                    return (
+                        <div key={i} className={`lic-stat-card border-${stat.color}`}>
+                            <div className={`lic-stat-icon bg-${stat.color}-light`}>
+                                <Icon size={22} className={`text-${stat.color}`} />
                             </div>
-                        )}
+                            <div className="lic-stat-info">
+                                <span className="lic-stat-label">{stat.label}</span>
+                                <span className="lic-stat-value">{stat.value}</span>
+                            </div>
+                            <div className={`lic-stat-bg-icon text-${stat.color}-light`}><Icon size={64} /></div>
+                        </div>
+                    );
+                })}
+            </div>
 
-                        <button
-                            type="submit"
-                            className="submit-btn"
-                            disabled={submitting}
-                        >
-                            <Save size={18} />
-                            {submitting ? 'Saving...' : 'Save Lead'}
-                        </button>
-                    </form>
+            {/* Filters */}
+            <div className="lic-filters-bar">
+                <div className="lic-filter-group">
+                    <button className="filter-dropdown">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" /></svg>
+                        Status <ChevronDown size={14} />
+                    </button>
+                    <button className="filter-dropdown">
+                        <Calendar size={14} />
+                        Date Range <ChevronDown size={14} />
+                    </button>
+                    <button className="filter-dropdown">
+                        <Folder size={14} />
+                        Source <ChevronDown size={14} />
+                    </button>
+                    <div className="divider"></div>
+                    <button className="icon-btn-square"><Download size={16} /></button>
                 </div>
+            </div>
 
-                {/* Leads List */}
-                <div className="leads-list-card">
-                    <div className="card-header">
-                        <h2>All Leads ({leads.length})</h2>
-                    </div>
+            {/* Table */}
+            <div className="lic-table-header">
+                <div>LEAD PROFILE</div>
+                <div>COMPANY</div>
+                <div>STATUS</div>
+                <div>AI SENTIMENT</div>
+                <div>LAST INTERACTION</div>
+                <div className="text-right">ACTIONS</div>
+            </div>
 
-                    <div className="leads-list">
-                        {loading ? (
-                            <div className="loading-state">Loading leads...</div>
-                        ) : leads.length === 0 ? (
-                            <div className="empty-state">
-                                <UserPlus size={48} />
-                                <p>No leads yet</p>
-                                <span>Start by adding your first lead</span>
+            <div className="lic-leads-list">
+                {mockLeads.map((lead) => (
+                    <div key={lead.id} className="lic-lead-row">
+                        <div className="lead-col-profile">
+                            <div className={`lead-avatar ${lead.avatarBg}`}>{lead.initial}</div>
+                            <div className="lead-name-email">
+                                <strong>{lead.name}</strong>
+                                <span>{lead.email}</span>
                             </div>
-                        ) : (
-                            <div className="leads-grid">
-                                {leads.map((lead) => (
-                                    <div key={lead.id} className="lead-card">
-                                        <div className="lead-header">
-                                            <h3>{lead.name}</h3>
-                                            <div className="lead-actions">
-                                                <span className="lead-date">
-                                                    {lead.createdAt ? new Date(lead.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
-                                                </span>
-                                                <button
-                                                    className="delete-lead-btn"
-                                                    onClick={() => handleDelete(lead.id, lead.name)}
-                                                    title="Delete lead"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="lead-details">
-                                            <p><strong>Phone:</strong> {lead.number}</p>
-                                            {lead.remarks && (
-                                                <p className="lead-remarks"><strong>Remarks:</strong> {lead.remarks}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                        </div>
+                        <div className="lead-col-company">
+                            <span className="building-icon">🏢</span> {lead.company}
+                        </div>
+                        <div className="lead-col-status">
+                            <span className={`status-pill pill-${lead.status.replace(/\s+/g, '-').toLowerCase()}`}>
+                                <div className="dot"></div> {lead.status}
+                            </span>
+                        </div>
+                        <div className="lead-col-sentiment">
+                            <div className="sentiment-header">
+                                <span className={`text-${lead.sentiment.toLowerCase()}`}>{lead.sentiment}</span>
+                                <strong>{lead.match}%</strong>
                             </div>
-                        )}
+                            <div className="sentiment-bar-bg">
+                                <div className={`sentiment-bar fill-${lead.sentiment.toLowerCase()}`} style={{ width: `${lead.match}%` }}></div>
+                            </div>
+                        </div>
+                        <div className="lead-col-interaction">
+                            <div className="interaction-header">
+                                <span className={`interaction-dot dot-${lead.interactionType}`}></span>
+                                <span>{lead.interaction}</span>
+                            </div>
+                            <span className="interaction-time">{lead.time}</span>
+                        </div>
+                        <div className="lead-col-actions text-right">
+                            <button className="action-btn">View</button>
+                        </div>
                     </div>
+                ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="lic-pagination">
+                <div className="pagi-info">
+                    Showing <strong>1-4</strong> of <strong>2,543</strong> leads
+                </div>
+                <div className="pagi-controls">
+                    <button className="pagi-btn disabled">Previous</button>
+                    <button className="pagi-btn active">1</button>
+                    <button className="pagi-btn">2</button>
+                    <button className="pagi-btn">3</button>
+                    <span className="pagi-dots">...</span>
+                    <button className="pagi-btn">Next</button>
                 </div>
             </div>
         </div>
     );
 };
+
+// SVG icons as components for smaller footprint
+const Calendar = ({ size }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
+const Folder = ({ size }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
 
 export default LeadGeneration;

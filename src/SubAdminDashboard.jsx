@@ -57,7 +57,7 @@ function SubAdminDashboard({ user }) {
     };
 
     return (
-        <div className="subadmin-dashboard">
+        <div className={`subadmin-dashboard ${activeSection === 'dashboard' ? 'dashboard-dark-theme' : ''}`}>
             {/* Mobile Menu Button */}
             {isMobile && (
                 <button
